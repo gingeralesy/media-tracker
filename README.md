@@ -24,13 +24,14 @@ Simply load the library and start the tracker from REPL.
   * `:interval` for the frequency of the queries in seconds. This defaults to `1.0`.
   * `:timeout` for waiting on the update requests in seconds. This defaults to `5.0`.
 
+To stop a synchronous tracker simply press Enter.
+
 To stop an asynchronous tracker you may simply run the following function.
 ``` lisp
 (media-tracker:stop-tracker)
 ```
 
 To get the current song as a string call the following function.
-
 ``` lisp
 (media-tracker:current-song :spotify)
 ```
