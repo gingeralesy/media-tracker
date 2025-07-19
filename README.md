@@ -41,8 +41,8 @@ To get the current song as a string call the following function.
 
 ### Spotify
 
-The tool will simply find the title of the window that Spotify is running on and uses it, if
-one is currently being played.
+The tool will simply find the title of the window that Spotify is running on and uses it if
+a song is currently being played.
 
 ### VLC
 
