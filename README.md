@@ -16,7 +16,8 @@ Simply load the library and start the tracker from REPL.
 (media-tracker:start-tracker :spotify #P"current-song.txt" NIL)
 ```
 
-* The first argument is the media player. Currently only `:vlc` and `:spotify` are supported.
+* The first argument is the media player. Currently `:foobar2000`, `:vlc`, and `:spotify` are
+  supported.
 * The second argument is a pathname to the file that the artist and song title is written into.
 * The third argument rules whether or not the tracker should be run asynchronously.
   * **Note:** Only one instance of the tracker may be running at a time.
@@ -36,13 +37,16 @@ To get the current song as a string call the following function.
 (media-tracker:current-song :spotify)
 ```
 
-* Similarly to `start-tracker` you may pass `:vlc` or `:spotify`.
+* Similarly to `start-tracker` you may pass `:foobar2000`, `:vlc`, or `:spotify`.
 * And also similarly the additional arguments may be passed depending on the media player.
 
-### Spotify
+### Spotify and foobar2000
 
-The tool will simply find the title of the window that Spotify is running on and uses it if
-a song is currently being played.
+The tool will simply find the title of the window that Spotify or foobar2000 is running on and
+parses the artist and the song title from it if music is currently being played.
+
+**Note:** You can modify how foobar2000 formats the window title in Preferences > Display >
+Default User Interface.
 
 ### VLC
 
@@ -61,7 +65,8 @@ There is a number of additional arguments that may be passed:
 
 ## TODO
 
-* Linux support for Spotify song tracker.
+* Linux support for Spotify and foobar2000 song trackers.
+* Test how requesting for the VLC status breaks if the request is wrong or server is down.
 
 ## Dependencies
 

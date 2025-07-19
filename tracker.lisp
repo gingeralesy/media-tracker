@@ -1,6 +1,6 @@
 (in-package #:media-tracker)
 
-(deftype media-player () '(and keyword (or (eql :vlc) (eql :spotify))))
+(deftype media-player () '(and keyword (or (eql :vlc) (eql :spotify) (eql :foobar2000))))
 
 (defparameter *tracker-lock* (bt2:make-lock :name "MEDIA-TRACKER-LOCK"))
 (defparameter *tracker-semaphore* (bt2:make-semaphore :name "MEDIA-TRACKER-SEMAPHORE"))
@@ -25,7 +25,8 @@
         (vlc-current-track :login (gethash :login args) :password (gethash :password args))
         :album (gethash :album args)
         :track-number (gethash :track-number args))))
-    (:spotify (spotify-current-track))))
+    (:spotify (spotify-current-track))
+    (:foobar2000 (foobar2000-current-track))))
 
 (defun update-current-track (player &optional args)
   (declare (type (or null simple-string) *tracker-current*))
