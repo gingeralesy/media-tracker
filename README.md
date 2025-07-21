@@ -66,7 +66,7 @@ There is a number of additional arguments that may be passed:
 ## TODO
 
 * Linux support for Spotify and foobar2000 song trackers.
-* Test how requesting for the VLC status breaks if the request is wrong or server is down.
+* Warn when VLC tracker request connects but is unsuccessful.
 
 ## Dependencies
 

@@ -11,17 +11,16 @@
 (defparameter *interval* 1.0)
 (defparameter *timeout* 5.0)
 
-(defun current-track (player &optional args)
+(defun fetch-current-track (player args)
   (declare (type media-player player))
-  (declare (type (or null hash-table) args))
+  (declare (type hash-table args))
   ;; (declare (optimize (speed 3)))
   (ecase player
     (:vlc
-     (let* ((args (or args (make-hash-table)))
-            (*vlc-server-protocol* (gethash :protocol args *vlc-server-protocol*))
-            (*vlc-server-hostname* (gethash :hostname args *vlc-server-hostname*))
-            (*vlc-server-port* (gethash :port args *vlc-server-port*))
-            (*vlc-root-path* (gethash :root-path args *vlc-root-path*)))
+     (let ((*vlc-server-protocol* (gethash :protocol args *vlc-server-protocol*))
+           (*vlc-server-hostname* (gethash :hostname args *vlc-server-hostname*))
+           (*vlc-server-port* (gethash :port args *vlc-server-port*))
+           (*vlc-root-path* (gethash :root-path args *vlc-root-path*)))
        (vlc-track-name
         (vlc-current-track :login (gethash :login args) :password (gethash :password args))
         :album (gethash :album args)
@@ -29,19 +28,25 @@
     (:spotify (spotify-current-track))
     (:foobar2000 (foobar2000-current-track))))
 
-(defun update-current-track (player &optional args)
-  (declare (type (or null simple-string) *tracker-current*))
+(defun update-current-track (player args)
   (declare (type single-float *timeout*))
   (declare (type media-player player))
-  (declare (type (or null hash-table) args))
+  (declare (type hash-table args))
   ;; (declare (optimize (speed 3)))
   (handler-case
-      (let ((new-name (bt2:with-timeout (*timeout*) (current-track player args))))
-        (declare (type simple-string new-name))
-        (unless (and *tracker-current* (string= new-name (the simple-string *tracker-current*)))
+      (multiple-value-bind (new-name current-name)
+          (bt2:with-timeout (*timeout*)
+            (values (fetch-current-track player args) *tracker-current*))
+        (declare (type (or null simple-string) new-name current-name))
+        (when (and new-name (or (null current-name) (string/= new-name current-name)))
           (bt2:with-lock-held (*tracker-lock*)
+            (v:debug :media-tracker "Updating track to \"~a\"" new-name)
             (setf *tracker-current* new-name))))
     (bt2:timeout () (v:warn :media-tracker.update "Fetching the current track timed out."))))
+
+(defun current-track (player &rest args)
+  (declare (type media-player player))
+  (fetch-current-track player (plist-hash-table args)))
 
 (defun start-tracker (player file async-p &rest args)
   (declare (type media-player player))
@@ -55,9 +60,9 @@
     (when *tracker-thread*
       (v:warn :media-tracker.run "A Media Player Tracker (async) is already running.")
       (return-from start-tracker)))
-  (let* ((args (when args (plist-hash-table args)))
-         (*interval* (or (when args (gethash :interval args)) *interval*))
-         (*timeout* (or (when args (gethash :timeout args)) *timeout*)))
+  (let* ((args (plist-hash-table args))
+         (*interval* (gethash :interval args *interval*))
+         (*timeout* (gethash :timeout args *timeout*)))
     (declare (type single-float *interval* *timeout*))
     (flet ((track-loop ()
              (unwind-protect
