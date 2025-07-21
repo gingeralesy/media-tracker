@@ -1,13 +1,16 @@
 (in-package #:media-tracker)
 
 (defun vlc-current-track (&key login password)
-  (loop with status = (vlc-status :login login :password password)
-        for info across (lquery:$ status "root > information > category[name=\"meta\"] > info")
-        for name = (plump:attribute info "name")
-        for key = (when (and name (< 0 (length name)))
-                    (intern (cl-ppcre:regex-replace-all "_" (string-upcase name) "-") :keyword))
-        and value = (plump:decode-entities (plump:text info) T)
-        when (and key value) nconc (list key value)))
+  (handler-case
+      (loop with status = (vlc-status :login login :password password)
+            for info across (lquery:$ status "root > information > category[name=\"meta\"] > info")
+            for name = (plump:attribute info "name")
+            for key = (when (and name (< 0 (length name)))
+                        (intern (cl-ppcre:regex-replace-all "_" (string-upcase name) "-") :keyword))
+            and value = (plump:decode-entities (plump:text info) T)
+            when (and key value) nconc (list key value))
+    (usocket:socket-error (condition)
+      (v:warn :media-tracker.vlc "Failed to connect to VLC: ~a" condition))))
 
 (defun vlc-track-name (track &key album track-number)
   (declare (type boolean album track-number))

@@ -17,10 +17,11 @@
   ;; (declare (optimize (speed 3)))
   (ecase player
     (:vlc
-     (let ((*vlc-server-protocol* (gethash :protocol args *vlc-server-protocol*))
-           (*vlc-server-hostname* (gethash :hostname args *vlc-server-hostname*))
-           (*vlc-server-port* (gethash :port args *vlc-server-port*))
-           (*vlc-root-path* (gethash :root-path args *vlc-root-path*)))
+     (let* ((args (or args (make-hash-table)))
+            (*vlc-server-protocol* (gethash :protocol args *vlc-server-protocol*))
+            (*vlc-server-hostname* (gethash :hostname args *vlc-server-hostname*))
+            (*vlc-server-port* (gethash :port args *vlc-server-port*))
+            (*vlc-root-path* (gethash :root-path args *vlc-root-path*)))
        (vlc-track-name
         (vlc-current-track :login (gethash :login args) :password (gethash :password args))
         :album (gethash :album args)
