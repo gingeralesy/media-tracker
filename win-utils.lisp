@@ -1,15 +1,15 @@
 (in-package #:media-tracker)
 
 (defparameter *linebreak-re* (cl-ppcre:create-scanner "\\r?\\n"))
-(defparameter *no-matches-re*
+(defparameter *win-valid-process-name-re* (cl-ppcre:create-scanner "^[^<>:\"/\\|?*]+\\.exe$"))
+(defparameter *win-no-matches-re*
   (cl-ppcre:create-scanner
    "^\\s*INFO: No tasks are running which match the specified criteria.\\s*$"))
 
 (defun check-win-process-name (name)
   (declare (type simple-string name))
-  (dolist (ch '(#\< #\> #\Colon #\" #\/ #\\ #\| #\? #\*))
-    (when (find ch name :test #'char=)
-      (error 'win-invalid-image-name :name name))))
+  (unless (cl-ppcre:scan *win-valid-process-name-re* name)
+    (error 'win-invalid-image-name :name name)))
 
 (defun parse-csv (line)
   (declare (type simple-string line))
@@ -66,7 +66,7 @@
   (check-win-process-name process-name)
   (let* ((command (win-tasklist-command process-name T))
          (output (win-command-output command)))
-    (unless (cl-ppcre:scan *no-matches-re* output)
+    (unless (cl-ppcre:scan *win-no-matches-re* output)
       (loop with process-list = (cl-ppcre:split *linebreak-re* output)
             with headers of-type list = (parse-csv (first process-list))
             with pid-index = (or (position "PID" headers :test #'istring=)
