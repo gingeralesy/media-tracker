@@ -13,3 +13,9 @@
   (:report (lambda (condition stream)
              (with-slots (headers) condition
                (format stream "Invalid headers: (~{~s~^ ~})" headers)))))
+
+(define-condition win-invalid-image-name (win-tracker-error)
+  ((name :initarg :name :reader name))
+  (:report (lambda (condition stream)
+             (with-slots (name) condition
+               (format stream "Invalid image name: ~a" name)))))
